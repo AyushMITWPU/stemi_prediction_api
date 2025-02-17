@@ -451,31 +451,31 @@ class EnsembleECGModel(ECGModel):
 
 
 
-# class DropboxEnsembleECGModel(EnsembleECGModel):
-#     def load_model_list(self, args):
-#         # Define your Dropbox direct download URLs for each ensemble model.
-#         dropbox_urls = {
-#             1: "https://www.dropbox.com/scl/fi/siaccx2bm1zs9nlo99lj4/model_1.pth?rlkey=9s7lpcypg5sloi49cq6w65k71&st=1hgfx721&dl=1",
-#             2: "https://www.dropbox.com/scl/fi/g68i4hofjim96vtzoqm65/model_2.pth?rlkey=m0tulk3s9jxcatvg71qjwfs1m&st=je10u1dx&dl=1",
-#             3: "https://www.dropbox.com/scl/fi/i9jj9u913at8hs6zl02yk/model_3.pth?rlkey=wn5slhg70u640xjkyxdct2xfz&st=4yo63oy7&dl=1",
-#             4: "https://www.dropbox.com/scl/fi/0edtarvrmcacmj2wsqwwc/model_4.pth?rlkey=w5mtmfzvly2xyo5i7slv4spjk&st=eniwf10y&dl=1",
-#             5: "https://www.dropbox.com/scl/fi/mls3o4l2eqcwedxxnjyyu/model_5.pth?rlkey=77020y5eetd7u3lxyt1a24m6x&st=y25bqutl&dl=1"
-#         }
-#         model_list = []
-#         for i in range(1, args.num_ensembles + 1):
-#             # Create a new generic model instance
-#             model = ECGModel(args)
-#             model.eval()
-#             # Get the Dropbox URL for this ensemble member
-#             dropbox_url = dropbox_urls.get(i)
-#             if dropbox_url is None:
-#                 raise ValueError(f"Dropbox URL for model {i} not provided.")
-#             # Download the model weights directly into memory
-#             response = requests.get(dropbox_url)
-#             response.raise_for_status()
-#             map_location = {"cuda:0": "cuda:0"} if torch.cuda.is_available() else torch.device("cpu")
-#             checkpoint = torch.load(BytesIO(response.content), map_location=map_location, weights_only=True)
-#             state_dict = self.convert_ddp_model_parameters(checkpoint["model"])
-#             model.load_state_dict(state_dict)
-#             model_list.append(copy.deepcopy(model))
-#         return model_list
+class DropboxEnsembleECGModel(EnsembleECGModel):
+    def load_model_list(self, args):
+        # Define your Dropbox direct download URLs for each ensemble model.
+        dropbox_urls = {
+            1: "https://www.dropbox.com/scl/fi/siaccx2bm1zs9nlo99lj4/model_1.pth?rlkey=9s7lpcypg5sloi49cq6w65k71&st=1hgfx721&dl=1",
+            2: "https://www.dropbox.com/scl/fi/g68i4hofjim96vtzoqm65/model_2.pth?rlkey=m0tulk3s9jxcatvg71qjwfs1m&st=je10u1dx&dl=1",
+            3: "https://www.dropbox.com/scl/fi/i9jj9u913at8hs6zl02yk/model_3.pth?rlkey=wn5slhg70u640xjkyxdct2xfz&st=4yo63oy7&dl=1",
+            4: "https://www.dropbox.com/scl/fi/0edtarvrmcacmj2wsqwwc/model_4.pth?rlkey=w5mtmfzvly2xyo5i7slv4spjk&st=eniwf10y&dl=1",
+            5: "https://www.dropbox.com/scl/fi/mls3o4l2eqcwedxxnjyyu/model_5.pth?rlkey=77020y5eetd7u3lxyt1a24m6x&st=y25bqutl&dl=1"
+        }
+        model_list = []
+        for i in range(1, args.num_ensembles + 1):
+            # Create a new generic model instance
+            model = ECGModel(args)
+            model.eval()
+            # Get the Dropbox URL for this ensemble member
+            dropbox_url = dropbox_urls.get(i)
+            if dropbox_url is None:
+                raise ValueError(f"Dropbox URL for model {i} not provided.")
+            # Download the model weights directly into memory
+            response = requests.get(dropbox_url)
+            response.raise_for_status()
+            map_location = {"cuda:0": "cuda:0"} if torch.cuda.is_available() else torch.device("cpu")
+            checkpoint = torch.load(BytesIO(response.content), map_location=map_location, weights_only=True)
+            state_dict = self.convert_ddp_model_parameters(checkpoint["model"])
+            model.load_state_dict(state_dict)
+            model_list.append(copy.deepcopy(model))
+        return model_list
