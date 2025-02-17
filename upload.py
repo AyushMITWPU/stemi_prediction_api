@@ -48,9 +48,9 @@ def main():
     if submit_button:
         if uploaded_files:
             # Set base paths (adjust these paths as necessary)
-            base_path = "/content/stemi_prediction/data/Test_data"  # Folder where ECG data is stored
-            metadata_file = os.path.join("/content/stemi_prediction/data",
-                                         "Test_metadata.csv")
+            base_path = os.path.join(os.getcwd(), "data", "Test_data")
+            metadata_file = os.path.join(os.getcwd(), "data", "Test_metadata.csv")
+
 
             # We want only one entry. Use folder id 1 always.
             folder_id = 1

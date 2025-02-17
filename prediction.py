@@ -1,53 +1,48 @@
+import os
+os.environ["PYTORCH_NO_NNPACK"] = "1"
+
 import argparse
 from argparse import Namespace
 import json
 import os
 import torch
 import torch.nn.functional as F
-import pandas as pd
-import numpy as np
 
 from dataloader import MyECGDataset
-from model import DropboxEnsembleECGModel
+from model import EnsembleECGModel  # Use EnsembleECGModel, ensuring it's taken from logs
 
 if __name__ == "__main__":
-    # System arguments with absolute paths for PythonAnywhere
+    # System arguments
     sys_parser = argparse.ArgumentParser(add_help=False)
     sys_parser.add_argument(
-        "--input_data",
-        type=str,
-        default="data/test_data.h5",
-        help="Path to the H5 test data file.",
+        "--input_data", type=str, default="data/test_data.h5", help="Path to H5 test data file."
     )
     sys_parser.add_argument(
-        "--log_dir",
-        type=str,
-        default="logs",
-        help="Path to the directory containing config and for saving predictions.",
+        "--log_dir", type=str, default="logs/", help="Path to directory containing config and model."
     )
     settings, _ = sys_parser.parse_known_args()
 
-    # Read config file from the logs folder.
+    # Read config file from the logs folder
     config_path = os.path.join(os.getcwd(), settings.log_dir, "config.json")
     with open(config_path) as json_file:
         mydict = json.load(json_file)
     config = Namespace(**mydict)
-    config.device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu")
+    config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # -----------------------------------------------------------------------------
     # Create dataloader for the test data.
     # -----------------------------------------------------------------------------
     dataset = MyECGDataset(settings.input_data)
-    test_loader = torch.utils.data.DataLoader(dataset,
-                                              batch_size=config.batch_size,
-                                              shuffle=False)
+    test_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=config.batch_size, shuffle=False
+    )
 
     # -----------------------------------------------------------------------------
-    # Initialize the model using DropboxEnsembleECGModel
+    # Initialize the model from logs folder
     # -----------------------------------------------------------------------------
-    model = DropboxEnsembleECGModel(config, settings.log_dir)
-    model.eval()  # Set model to evaluation mode.
+    model = EnsembleECGModel(config, settings.log_dir)  # Model loaded from logs
+    model.to(config.device)
+    model.eval()  # Set model to evaluation mode
 
     # -----------------------------------------------------------------------------
     # Prediction loop.
